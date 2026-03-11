@@ -1,0 +1,7 @@
+so_long
+!so_long/
+*.o
+*.a
+a.out
+src/libft/.bonus_linked
+.vscode/
