@@ -10,15 +10,14 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../minilibx-linux/mlx.h"
+#include "so_long.h"
 
-int	main(void)
+int	main(int ac, char **av)
 {
-	void	*mlx;
-	void	*mlx_win;
+	t_game	game;
 
-	mlx = mlx_init();
-	mlx_win = mlx_new_window(mlx, 1920, 1080, "Hello world!");
-	mlx_loop(mlx);
-	(void)mlx_win;
+	game_init(&game, ac, av);
+	mlx_loop(game.mlx);
+	game_destroy(&game);
+	return (0);
 }

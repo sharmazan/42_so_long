@@ -14,7 +14,9 @@ LDFLAGS = -L$(MLX_PATH) -L$(FTPRINTF_PATH) -L$(LIBFT_PATH)
 LDLIBS = -lmlx -lftprintf -lft -lXext -lX11 -lm -lz
 
 
-SOURCES =	so_long.c
+SOURCES =	so_long.c \
+			helpers.c \
+			startup.c
 
 OBJECTS = $(SOURCES:.c=.o)
 

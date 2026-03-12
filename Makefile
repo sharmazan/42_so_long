@@ -4,6 +4,8 @@ CC = cc
 CFLAGS = -Wall -Wextra -Werror
 
 SO_LONG_PATH = $(SRC_PATH)/$(NAME)
+SO_LONG_SOURCES = $(wildcard $(SO_LONG_PATH)/*.c)
+SO_LONG_HEADERS = $(wildcard $(SO_LONG_PATH)/*.h)
 LIBFT_PATH = $(SRC_PATH)/libft
 LIBFT_LIB = $(LIBFT_PATH)/libft.a
 FTPRINTF_PATH = $(SRC_PATH)/ft_printf
@@ -14,7 +16,8 @@ HEADER = src/inc/ft_header.h
 
 all: $(NAME)
 
-$(NAME): $(MLX_LIB) $(FTPRINTF_LIB) $(LIBFT_LIB) $(HEADER)
+$(NAME): $(MLX_LIB) $(FTPRINTF_LIB) $(LIBFT_LIB) $(HEADER) \
+	$(SO_LONG_SOURCES) $(SO_LONG_HEADERS) $(SO_LONG_PATH)/Makefile
 	$(MAKE) -C $(SO_LONG_PATH) CC="$(CC)" CFLAGS="$(CFLAGS)"
 	cp $(SO_LONG_PATH)/$(NAME) .
 
