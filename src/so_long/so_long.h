@@ -13,7 +13,7 @@
 #ifndef SO_LONG_H
 # define SO_LONG_H
 
-# include "../inc/ft_header.h"
+# include "ft_header.h"
 # include "mlx.h"
 # include <X11/X.h>
 # include <X11/keysym.h>
