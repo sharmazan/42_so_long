@@ -10,6 +10,12 @@ Its purpose is to have you work with textures, sprites, and other basic gameplay
 Current implementation should be executed on linux. 
 
 ## How to run
+Install libraries
+```
+sudo apt update
+sudo apt install libx11-dev libxext-dev libbsd-dev
+```
+
 Make first:
 ```
 make
@@ -27,28 +33,20 @@ https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html#initializ
 
 # TODO
 
-### Proper window management
-Now so_long opens a window, but it could not be closed. 
+## Done
+- Proper window management with `Esc` and window-close handling
+- `t_game` state for map, window, player position, counters, and loaded assets
+- Map loading through `get_next_line`
+- Basic map validation for characters, shape, borders, player, exit, and
+  collectibles
+- Path validation so the player can reach every collectible and the exit
+- Static tile rendering with XPM assets for floor, wall, player, collectible,
+  and exit
+- Window sizing from map dimensions
+- Cleanup for map memory, images, window, and MLX display state
+- Valid and invalid `.ber` fixture maps
 
-### Add t_game struct for saving the game data
-Create a t_game struct for map, player position, collectible count, and move counter.
-
-### Map loading
-Read the .ber file, load it into memory, split it into rows, and store width/height.
-
-### Basic map validation
-Check all mandatory subject rules: 
-- allowed characters only
-- rectangular map
-- walls around the border
-- exactly one P
-- exactly one E
-- at least one C
-
-### Path validation so the player can reach every collectible and the exit
-
-### Draw a map with all objects
-Start with a simple tile-based renderer: floor, wall, player, collectible, exit. Load XPM assets with MiniLibX, calculate window size from map dimensions, and draw the full map each frame or redraw on movement.
+## Next
 
 ### Implement player management with W/A/S/D
 - Handle W/A/S/D pressing
@@ -59,18 +57,9 @@ Start with a simple tile-based renderer: floor, wall, player, collectible, exit.
 
 ### Print move counter
 
-### Verify cleanup and error handling.
-Free map memory, destroy images/windows/display, and exit cleanly on errors or window close.
-
-### Add test maps and a test script
-Create a few valid and invalid .ber maps:
-- minimal valid map
-- bad borders
-- bad counts
-- unreachable collectible
-- unreachable exit
-- non-rectangular map
-Create a test script to ensure ./so_long return an Error in every case it should. 
+### Add a test script
+Create a script to ensure `./so_long` returns `Error` on every invalid map and
+starts correctly on valid maps.
 
 ### Norminette
 

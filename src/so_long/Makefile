@@ -19,6 +19,7 @@ SOURCES =	so_long.c \
 			map_load.c \
 			map_validate.c \
 			map_path.c \
+			render.c \
 			$(GNL_PATH)/get_next_line.c
 
 OBJECTS = $(SOURCES:.c=.o)

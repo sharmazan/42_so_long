@@ -27,10 +27,12 @@ static void	install_hooks(t_game *game)
 	mlx_hook(game->win, KeyPress, KeyPressMask, handle_keypress, game);
 	mlx_hook(game->win, DestroyNotify, StructureNotifyMask,
 		handle_destroy, game);
+	mlx_expose_hook(game->win, handle_expose, game);
 }
 
 void	game_destroy(t_game *game)
 {
+	destroy_assets(game);
 	if (game->map)
 	{
 		map_free(game->map);
@@ -61,6 +63,11 @@ void	game_init(t_game *game, int ac, char **av)
 {
 	game->mlx = NULL;
 	game->win = NULL;
+	game->floor_img = NULL;
+	game->wall_img = NULL;
+	game->player_img = NULL;
+	game->collectible_img = NULL;
+	game->exit_img = NULL;
 	game->map_path = NULL;
 	game->map = NULL;
 	game->window_width = 0;
@@ -87,6 +94,8 @@ void	game_init(t_game *game, int ac, char **av)
 			game->window_height, WINDOW_TITLE);
 	if (!game->win)
 		game_exit(game, 1, "Error\nmlx_new_window failed");
+	load_assets(game);
+	draw_map(game);
 	install_hooks(game);
 }
 
