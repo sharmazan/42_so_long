@@ -26,6 +26,7 @@
 # define PLAYER_TEXTURE_PATH "textures/player.xpm"
 # define COLLECTIBLE_TEXTURE_PATH "textures/collectible.xpm"
 # define EXIT_TEXTURE_PATH "textures/exit.xpm"
+# define OPEN_EXIT_TEXTURE_PATH "textures/open_exit.xpm"
 
 typedef struct s_game
 {
@@ -36,6 +37,7 @@ typedef struct s_game
 	void	*player_img;
 	void	*collectible_img;
 	void	*exit_img;
+	void	*open_exit_img;
 	char	**map;
 	int		window_width;
 	int		window_height;

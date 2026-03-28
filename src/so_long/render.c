@@ -48,6 +48,8 @@ void	load_textures(t_game *game)
 		"Error\nCould not load textures/collectible.xpm");
 	load_texture(&game->exit_img, game, EXIT_TEXTURE_PATH,
 		"Error\nCould not load textures/exit.xpm");
+	load_texture(&game->open_exit_img, game, OPEN_EXIT_TEXTURE_PATH,
+		"Error\nCould not load textures/open_exit.xpm");
 }
 
 void	destroy_textures(t_game *game)
@@ -57,4 +59,5 @@ void	destroy_textures(t_game *game)
 	destroy_image(game->mlx, &game->player_img);
 	destroy_image(game->mlx, &game->collectible_img);
 	destroy_image(game->mlx, &game->exit_img);
+	destroy_image(game->mlx, &game->open_exit_img);
 }

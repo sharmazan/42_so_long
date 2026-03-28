@@ -11,6 +11,7 @@ The current project already covers the core mandatory gameplay loop:
 - move the player with `W`, `A`, `S`, `D`
 - collect every `C`
 - print the move count after each successful move
+- open the exit after all collectibles are gathered
 - allow exiting only after all collectibles are gathered
 - close cleanly on win, `Esc`, invalid input, or window close
 
@@ -184,6 +185,7 @@ The game currently reacts to three kinds of events:
 - moving onto floor succeeds
 - moving onto a collectible succeeds and increments `collected`
 - moving onto the exit is blocked until `collected == collectibles`
+- when `collected == collectibles`, the exit is redrawn with the open texture
 - moving onto the exit after all collectibles are gathered ends the game
 
 On every successful non-exit move, the function:

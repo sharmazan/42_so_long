@@ -46,7 +46,7 @@ https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html#initializ
 - Player movement with `W`, `A`, `S`, and `D`
 - Collectible pickup and collected-item tracking
 - Move counter printed after every successful move
-- Exit unlock logic after all collectibles are gathered
+- Exit unlock logic and open-exit visual after all collectibles are gathered
 - Clean game exit on win
 - Window sizing from map dimensions
 - Cleanup for map memory, images, window, and MLX display state

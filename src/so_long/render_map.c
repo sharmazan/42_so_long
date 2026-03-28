@@ -19,7 +19,11 @@ static void	*tile_image(t_game *game, char tile)
 	if (tile == 'C')
 		return (game->collectible_img);
 	if (tile == 'E')
+	{
+		if (game->collected == game->collectibles)
+			return (game->open_exit_img);
 		return (game->exit_img);
+	}
 	if (tile == 'P')
 		return (game->player_img);
 	return (game->floor_img);

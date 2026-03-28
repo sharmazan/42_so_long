@@ -1,9 +1,9 @@
 /* XPM */
 static char *floor_xpm[] = {
 "64 64 3 1",
-"a c #6B8F3E",
-"b c #7BA14C",
-"c c #5E7F34",
+"a c #3D7FB1",
+"b c #5A9FD6",
+"c c #2B628C",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
 "aaaaaabbaaaaaabbaaaaaabbaaaaaabbaaaaaabbaaaaaabbaaaaaabbaaaaaabb",
