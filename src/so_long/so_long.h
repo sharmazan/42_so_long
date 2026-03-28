@@ -31,7 +31,7 @@
 typedef struct s_game
 {
 	void	*mlx;
-	void	*win;
+	void	*window;
 	void	*floor_img;
 	void	*wall_img;
 	void	*player_img;

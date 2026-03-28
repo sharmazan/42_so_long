@@ -34,9 +34,9 @@ static void	init_graphics(t_game *game)
 	game->mlx = mlx_init();
 	if (!game->mlx)
 		game_exit(game, 1, "Error\nmlx_init failed");
-	game->win = mlx_new_window(game->mlx, game->window_width,
+	game->window = mlx_new_window(game->mlx, game->window_width,
 			game->window_height, WINDOW_TITLE);
-	if (!game->win)
+	if (!game->window)
 		game_exit(game, 1, "Error\nmlx_new_window failed");
 	load_textures(game);
 	draw_map(game);

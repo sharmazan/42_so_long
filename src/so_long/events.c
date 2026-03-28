@@ -14,10 +14,10 @@
 
 void	install_hooks(t_game *game)
 {
-	mlx_hook(game->win, KeyPress, KeyPressMask, handle_keypress, game);
-	mlx_hook(game->win, DestroyNotify, StructureNotifyMask,
+	mlx_hook(game->window, KeyPress, KeyPressMask, handle_keypress, game);
+	mlx_hook(game->window, DestroyNotify, StructureNotifyMask,
 		handle_destroy, game);
-	mlx_expose_hook(game->win, draw_map, game);
+	mlx_expose_hook(game->window, draw_map, game);
 }
 
 int	handle_destroy(t_game *game)

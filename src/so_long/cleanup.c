@@ -20,10 +20,10 @@ void	game_destroy(t_game *game)
 		map_free(game->map);
 		game->map = NULL;
 	}
-	if (game->mlx && game->win)
+	if (game->mlx && game->window)
 	{
-		mlx_destroy_window(game->mlx, game->win);
-		game->win = NULL;
+		mlx_destroy_window(game->mlx, game->window);
+		game->window = NULL;
 	}
 	if (game->mlx)
 	{

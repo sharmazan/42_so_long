@@ -34,7 +34,7 @@ static void	draw_tile(t_game *game, int x, int y)
 	void	*img;
 
 	img = tile_image(game, game->map[y][x]);
-	mlx_put_image_to_window(game->mlx, game->win, img,
+	mlx_put_image_to_window(game->mlx, game->window, img,
 		x * TILE_SIZE, y * TILE_SIZE);
 }
 
@@ -43,7 +43,7 @@ int	draw_map(t_game *game)
 	int	x;
 	int	y;
 
-	mlx_clear_window(game->mlx, game->win);
+	mlx_clear_window(game->mlx, game->window);
 	y = 0;
 	while (y < game->map_height)
 	{

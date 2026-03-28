@@ -21,14 +21,14 @@ static void	destroy_image(void *mlx, void **img)
 	}
 }
 
-static void	load_texture(void **img, t_game *game, char *path, char *name)
+static void	load_texture(void **img, t_game *game, char *path, char *error)
 {
 	int	width;
 	int	height;
 
 	*img = mlx_xpm_file_to_image(game->mlx, path, &width, &height);
 	if (!*img)
-		game_exit(game, 1, name);
+		game_exit(game, 1, error);
 	if (width != TILE_SIZE || height != TILE_SIZE)
 	{
 		destroy_image(game->mlx, img);
