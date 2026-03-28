@@ -15,12 +15,15 @@ LDLIBS = -lmlx -lft -lXext -lX11 -lm -lz
 
 SOURCES =	so_long.c \
 			helpers.c \
+			cleanup.c \
 			startup.c \
+			events.c \
 			move.c \
 			map_load.c \
 			map_validate.c \
 			map_path.c \
 			render.c \
+			render_map.c \
 			$(GNL_PATH)/get_next_line.c
 
 OBJECTS = $(SOURCES:.c=.o)

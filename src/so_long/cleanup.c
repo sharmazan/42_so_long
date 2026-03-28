@@ -1,0 +1,42 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   cleanup.c                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ssharmaz <ssharmaz@student.42vienna.com    +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2026/03/29 00:20:00 by ssharmaz          #+#    #+#             */
+/*   Updated: 2026/03/29 00:20:00 by ssharmaz         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
+#include "so_long.h"
+
+void	game_destroy(t_game *game)
+{
+	destroy_assets(game);
+	if (game->map)
+	{
+		map_free(game->map);
+		game->map = NULL;
+	}
+	if (game->mlx && game->win)
+	{
+		mlx_destroy_window(game->mlx, game->win);
+		game->win = NULL;
+	}
+	if (game->mlx)
+	{
+		mlx_destroy_display(game->mlx);
+		free(game->mlx);
+		game->mlx = NULL;
+	}
+}
+
+void	game_exit(t_game *game, int exit_code, char *message)
+{
+	if (message)
+		logerr(message);
+	game_destroy(game);
+	exit(exit_code);
+}

@@ -59,7 +59,8 @@ static void	check_reachable_tiles(t_game *game, char **copy)
 			{
 				map_free(copy);
 				game_exit(game, 1,
-					"Error\nMap must allow access to all collectibles and exit");
+					"Error\nMap must allow access to all "
+					"collectibles and exit");
 			}
 			x++;
 		}

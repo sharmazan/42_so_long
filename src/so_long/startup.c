@@ -22,44 +22,7 @@ static int	has_ber_extension(char *path)
 	return (!ft_strncmp(path + len - 4, ".ber", 5));
 }
 
-static void	install_hooks(t_game *game)
-{
-	mlx_hook(game->win, KeyPress, KeyPressMask, handle_keypress, game);
-	mlx_hook(game->win, DestroyNotify, StructureNotifyMask,
-		handle_destroy, game);
-	mlx_expose_hook(game->win, handle_expose, game);
-}
-
-void	game_destroy(t_game *game)
-{
-	destroy_assets(game);
-	if (game->map)
-	{
-		map_free(game->map);
-		game->map = NULL;
-	}
-	if (game->mlx && game->win)
-	{
-		mlx_destroy_window(game->mlx, game->win);
-		game->win = NULL;
-	}
-	if (game->mlx)
-	{
-		mlx_destroy_display(game->mlx);
-		free(game->mlx);
-		game->mlx = NULL;
-	}
-}
-
-void	game_exit(t_game *game, int exit_code, char *message)
-{
-	if (message)
-		logerr(message);
-	game_destroy(game);
-	exit(exit_code);
-}
-
-void	game_init(t_game *game, int ac, char **av)
+static void	init_game_state(t_game *game)
 {
 	game->mlx = NULL;
 	game->win = NULL;
@@ -80,11 +43,10 @@ void	game_init(t_game *game, int ac, char **av)
 	game->collected = 0;
 	game->exits = 0;
 	game->moves = 0;
-	if (ac != 2 || !has_ber_extension(av[1]))
-		game_exit(game, 1, "Error\nusage: ./so_long <map-file.ber>");
-	game->map_path = av[1];
-	map_load(game, game->map_path);
-	map_validate(game);
+}
+
+static void	init_graphics(t_game *game)
+{
 	game->window_width = game->map_width * TILE_SIZE;
 	game->window_height = game->map_height * TILE_SIZE;
 	game->mlx = mlx_init();
@@ -99,23 +61,13 @@ void	game_init(t_game *game, int ac, char **av)
 	install_hooks(game);
 }
 
-int	handle_destroy(t_game *game)
+void	game_init(t_game *game, int ac, char **av)
 {
-	game_exit(game, 0, NULL);
-	return (0);
-}
-
-int	handle_keypress(int keysym, t_game *game)
-{
-	if (keysym == XK_Escape)
-		game_exit(game, 0, NULL);
-	else if (keysym == XK_w || keysym == XK_W)
-		move_player(game, 0, -1);
-	else if (keysym == XK_a || keysym == XK_A)
-		move_player(game, -1, 0);
-	else if (keysym == XK_s || keysym == XK_S)
-		move_player(game, 0, 1);
-	else if (keysym == XK_d || keysym == XK_D)
-		move_player(game, 1, 0);
-	return (0);
+	init_game_state(game);
+	if (ac != 2 || !has_ber_extension(av[1]))
+		game_exit(game, 1, "Error\nusage: ./so_long <map-file.ber>");
+	game->map_path = av[1];
+	map_load(game, game->map_path);
+	map_validate(game);
+	init_graphics(game);
 }

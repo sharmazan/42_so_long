@@ -60,8 +60,3 @@ starts correctly on valid maps.
 ### Norminette
 
 ### Test with Valgrind
-
-### Decide on bonus scope
-- enemy patrols
-- animation
-- on-screen move counter

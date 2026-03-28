@@ -53,6 +53,7 @@ typedef struct s_game
 void	game_init(t_game *game, int ac, char **av);
 void	game_destroy(t_game *game);
 void	game_exit(t_game *game, int exit_code, char *message);
+void	install_hooks(t_game *game);
 void	load_assets(t_game *game);
 void	destroy_assets(t_game *game);
 void	draw_map(t_game *game);

@@ -36,28 +36,6 @@ static void	load_asset(void **img, t_game *game, char *path, char *name)
 	}
 }
 
-static void	*tile_image(t_game *game, char tile)
-{
-	if (tile == '1')
-		return (game->wall_img);
-	if (tile == 'C')
-		return (game->collectible_img);
-	if (tile == 'E')
-		return (game->exit_img);
-	if (tile == 'P')
-		return (game->player_img);
-	return (game->floor_img);
-}
-
-static void	draw_tile(t_game *game, int x, int y)
-{
-	void	*img;
-
-	img = tile_image(game, game->map[y][x]);
-	mlx_put_image_to_window(game->mlx, game->win, img,
-		x * TILE_SIZE, y * TILE_SIZE);
-}
-
 void	load_assets(t_game *game)
 {
 	load_asset(&game->floor_img, game, FLOOR_PATH,
@@ -79,29 +57,4 @@ void	destroy_assets(t_game *game)
 	destroy_image(game->mlx, &game->player_img);
 	destroy_image(game->mlx, &game->collectible_img);
 	destroy_image(game->mlx, &game->exit_img);
-}
-
-void	draw_map(t_game *game)
-{
-	int	x;
-	int	y;
-
-	mlx_clear_window(game->mlx, game->win);
-	y = 0;
-	while (y < game->map_height)
-	{
-		x = 0;
-		while (x < game->map_width)
-		{
-			draw_tile(game, x, y);
-			x++;
-		}
-		y++;
-	}
-}
-
-int	handle_expose(t_game *game)
-{
-	draw_map(game);
-	return (0);
 }

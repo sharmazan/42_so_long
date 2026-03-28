@@ -13,6 +13,7 @@ LIBFT_PATH = $(SRC_PATH)/libft
 LIBFT_LIB = $(LIBFT_PATH)/libft.a
 MLX_PATH = $(SRC_PATH)/minilibx-linux
 MLX_LIB = $(MLX_PATH)/libmlx.a
+NORM_PATHS = $(SO_LONG_PATH) $(GNL_PATH) $(LIBFT_PATH)
 
 all: $(NAME)
 
@@ -30,6 +31,9 @@ $(LIBFT_LIB):
 debug: CFLAGS += -g3 -O0
 debug: re
 
+norm:
+	norminette --use-gitignore $(NORM_PATHS)
+
 fclean: clean
 	rm -f $(NAME)
 	$(MAKE) -C $(LIBFT_PATH) fclean
@@ -42,4 +46,4 @@ clean:
 
 re: fclean all
 
-.PHONY: all clean tests re fclean debug
+.PHONY: all clean tests re fclean debug norm
