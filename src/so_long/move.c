@@ -62,6 +62,7 @@ void	move_player(t_game *game, int dx, int dy)
 			return ;
 		game->moves++;
 		print_moves(game->moves);
+		write(1, "You Win\n", 8);
 		game_exit(game, 0, NULL);
 		return ;
 	}
