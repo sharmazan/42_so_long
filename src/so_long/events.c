@@ -17,7 +17,7 @@ void	install_hooks(t_game *game)
 	mlx_hook(game->win, KeyPress, KeyPressMask, handle_keypress, game);
 	mlx_hook(game->win, DestroyNotify, StructureNotifyMask,
 		handle_destroy, game);
-	mlx_expose_hook(game->win, handle_expose, game);
+	mlx_expose_hook(game->win, draw_map, game);
 }
 
 int	handle_destroy(t_game *game)

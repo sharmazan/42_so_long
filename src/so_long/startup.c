@@ -24,25 +24,7 @@ static int	has_ber_extension(char *path)
 
 static void	init_game_state(t_game *game)
 {
-	game->mlx = NULL;
-	game->win = NULL;
-	game->floor_img = NULL;
-	game->wall_img = NULL;
-	game->player_img = NULL;
-	game->collectible_img = NULL;
-	game->exit_img = NULL;
-	game->map_path = NULL;
-	game->map = NULL;
-	game->window_width = 0;
-	game->window_height = 0;
-	game->map_width = 0;
-	game->map_height = 0;
-	game->player_x = 0;
-	game->player_y = 0;
-	game->collectibles = 0;
-	game->collected = 0;
-	game->exits = 0;
-	game->moves = 0;
+	ft_bzero(game, sizeof(*game));
 }
 
 static void	init_graphics(t_game *game)
@@ -66,8 +48,7 @@ void	game_init(t_game *game, int ac, char **av)
 	init_game_state(game);
 	if (ac != 2 || !has_ber_extension(av[1]))
 		game_exit(game, 1, "Error\nusage: ./so_long <map-file.ber>");
-	game->map_path = av[1];
-	map_load(game, game->map_path);
+	map_load(game, av[1]);
 	map_validate(game);
 	init_graphics(game);
 }

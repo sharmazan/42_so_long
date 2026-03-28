@@ -359,14 +359,10 @@ The pair has a clear division of responsibility:
 - Destroys all loaded sprites.
 - Exists as the matching cleanup step for `load_assets()`.
 
-`void draw_map(t_game *game)`
+`int draw_map(t_game *game)`
 - Clears the window and redraws every map tile.
 - Exists as the main render entry point used during startup, expose events, and
   successful movement.
-
-`int handle_expose(t_game *game)`
-- Redraws the map when MLX reports that the window must be repainted.
-- Exists to keep the window contents stable after expose events.
 
 ### `src/so_long/move.c`
 

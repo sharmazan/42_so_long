@@ -34,7 +34,7 @@ static void	draw_tile(t_game *game, int x, int y)
 		x * TILE_SIZE, y * TILE_SIZE);
 }
 
-void	draw_map(t_game *game)
+int	draw_map(t_game *game)
 {
 	int	x;
 	int	y;
@@ -51,10 +51,5 @@ void	draw_map(t_game *game)
 		}
 		y++;
 	}
-}
-
-int	handle_expose(t_game *game)
-{
-	draw_map(game);
 	return (0);
 }

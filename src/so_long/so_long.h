@@ -36,7 +36,6 @@ typedef struct s_game
 	void	*player_img;
 	void	*collectible_img;
 	void	*exit_img;
-	char	*map_path;
 	char	**map;
 	int		window_width;
 	int		window_height;
@@ -56,7 +55,7 @@ void	game_exit(t_game *game, int exit_code, char *message);
 void	install_hooks(t_game *game);
 void	load_assets(t_game *game);
 void	destroy_assets(t_game *game);
-void	draw_map(t_game *game);
+int		draw_map(t_game *game);
 void	logerr(char *s);
 void	move_player(t_game *game, int dx, int dy);
 void	map_load(t_game *game, char *path);
@@ -64,7 +63,6 @@ void	map_validate(t_game *game);
 void	map_validate_path(t_game *game);
 void	map_free(char **map);
 int		handle_destroy(t_game *game);
-int		handle_expose(t_game *game);
 int		handle_keypress(int keysym, t_game *game);
 
 #endif
