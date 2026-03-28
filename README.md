@@ -42,20 +42,16 @@ https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html#initializ
 - Path validation so the player can reach every collectible and the exit
 - Static tile rendering with XPM assets for floor, wall, player, collectible,
   and exit
+- Player movement with `W`, `A`, `S`, and `D`
+- Collectible pickup and collected-item tracking
+- Move counter printed after every successful move
+- Exit unlock logic after all collectibles are gathered
+- Clean game exit on win
 - Window sizing from map dimensions
 - Cleanup for map memory, images, window, and MLX display state
 - Valid and invalid `.ber` fixture maps
 
 ## Next
-
-### Implement player management with W/A/S/D
-- Handle W/A/S/D pressing
-- Block movement through walls
-- Collect C
-- count moves
-- Allow to go through E after all collectibles are gathered
-
-### Print move counter
 
 ### Add a test script
 Create a script to ensure `./so_long` returns `Error` on every invalid map and
@@ -65,4 +61,7 @@ starts correctly on valid maps.
 
 ### Test with Valgrind
 
-### Do bonus?
+### Decide on bonus scope
+- enemy patrols
+- animation
+- on-screen move counter

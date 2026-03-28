@@ -4,4 +4,5 @@ so_long
 *.a
 a.out
 src/libft/.bonus_linked
+src/minilibx-linux
 .vscode/

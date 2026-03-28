@@ -109,5 +109,13 @@ int	handle_keypress(int keysym, t_game *game)
 {
 	if (keysym == XK_Escape)
 		game_exit(game, 0, NULL);
+	else if (keysym == XK_w || keysym == XK_W)
+		move_player(game, 0, -1);
+	else if (keysym == XK_a || keysym == XK_A)
+		move_player(game, -1, 0);
+	else if (keysym == XK_s || keysym == XK_S)
+		move_player(game, 0, 1);
+	else if (keysym == XK_d || keysym == XK_D)
+		move_player(game, 1, 0);
 	return (0);
 }

@@ -57,6 +57,7 @@ void	load_assets(t_game *game);
 void	destroy_assets(t_game *game);
 void	draw_map(t_game *game);
 void	logerr(char *s);
+void	move_player(t_game *game, int dx, int dy);
 void	map_load(t_game *game, char *path);
 void	map_validate(t_game *game);
 void	map_validate_path(t_game *game);

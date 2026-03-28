@@ -1,687 +1,421 @@
 # so_long Project Guide
 
-This file explains the project as it exists now.
+This file describes the project as it works now.
 
-The current project is no longer only a validation skeleton. It now:
-- checks the input map path
-- loads the `.ber` file
-- validates map structure and playability
-- computes the window size from the map
-- loads XPM assets
-- draws the whole map as static tiles
-- keeps the window alive until the user presses `Esc` or closes it
-
-What is still missing:
-- player movement
-- collectible pickup
-- move counter
-- win logic
+The current project already covers the core mandatory gameplay loop:
+- load a `.ber` map
+- validate that the map is well-formed and playable
+- create the MLX window with the correct size
+- load XPM assets
+- draw the map
+- move the player with `W`, `A`, `S`, `D`
+- collect every `C`
+- print the move count after each successful move
+- allow exiting only after all collectibles are gathered
+- close cleanly on win, `Esc`, invalid input, or window close
 
 ## 1. Main Approach
 
-The architecture follows one rule:
+The project is built around four simple ideas.
 
-**the program should trust the map before it starts the visual part.**
+### 1. The map is the source of truth
 
-That means the startup order is:
+The map stored in `game->map` is not only input data. It is also the live game
+state.
+
+That means:
+- validation reads from it
+- rendering reads from it
+- movement updates it
+
+Because of that, there is one shared representation of the world instead of
+separate copies for logic and drawing.
+
+### 2. Fail early before graphics
+
+The program does not open a window until the map is trusted.
+
+The startup order is:
 1. initialize `t_game`
 2. validate arguments
 3. load the map
-4. validate the map
-5. compute window size
+4. validate map structure and reachability
+5. compute the window size
 6. initialize MLX
 7. create the window
-8. load the tile images
+8. load assets
 9. draw the map
-10. enter the MLX loop
+10. install hooks and enter the loop
 
-This order is important because:
-- invalid maps should fail early with clear errors
-- the map defines the future window size
-- rendering depends on valid tile data
-- gameplay will later depend on the same trusted state
+This matters because the map decides:
+- whether the program should even start
+- where the player is
+- how many collectibles exist
+- how large the window must be
 
-## 2. Central State: `t_game`
+### 3. One struct owns the whole program
 
-Everything important lives in `t_game`.
+The `t_game` struct stores all long-lived state:
+- MLX pointers
+- image pointers
+- map data
+- map dimensions
+- player position
+- collectible counters
+- move counter
 
-The idea is simple:
-- one struct stores all long-lived state
-- every stage of the program receives the same object
-- cleanup becomes predictable because one object owns everything
+This keeps function signatures small and makes cleanup predictable.
 
-Current fields:
+### 4. Redraw the whole map after each change
 
-- `mlx`
-  MLX connection pointer returned by `mlx_init()`.
+The current render strategy is intentionally simple:
+- when the window is exposed, draw everything
+- when the player moves, draw everything again
 
-- `win`
-  MLX window pointer returned by `mlx_new_window()`.
+That is not the most optimized approach, but it is easy to reason about and is
+perfectly fine for a small 42 project.
 
-- `floor_img`
-  Image pointer for the floor tile.
+## 2. Tile Meaning
 
-- `wall_img`
-  Image pointer for the wall tile.
+The game uses the classic `so_long` tile set:
 
-- `player_img`
-  Image pointer for the player tile.
+- `1`: wall
+- `0`: floor
+- `P`: player
+- `C`: collectible
+- `E`: exit
 
-- `collectible_img`
-  Image pointer for the collectible tile.
-
-- `exit_img`
-  Image pointer for the exit tile.
-
-- `map_path`
-  The path received from the command line.
-
-- `map`
-  The loaded map as `char **`.
-
-- `window_width`
-  Window width in pixels.
-
-- `window_height`
-  Window height in pixels.
-
-- `map_width`
-  Map width in tiles.
-
-- `map_height`
-  Map height in tiles.
-
-- `player_x`
-  Player column from the map.
-
-- `player_y`
-  Player row from the map.
-
-- `collectibles`
-  Number of collectibles in the map.
-
-- `collected`
-  Reserved for future gameplay.
-
-- `exits`
-  Number of exits in the map.
-
-- `moves`
-  Reserved for future gameplay.
-
-This struct already contains what the next steps will need, so movement and
-render updates can reuse the same state instead of redesigning the program.
+These characters are used in three places:
+- map validation
+- rendering
+- movement rules
 
 ## 3. Runtime Logic
 
-### Step 1: `main`
+### Step 1: program start
 
 `main()` creates a `t_game`, calls `game_init()`, then enters `mlx_loop()`.
 
-`main()` is intentionally small because the real logic belongs in dedicated
-functions.
+`main()` stays small on purpose. It delegates real work to dedicated modules.
 
-### Step 2: bootstrap
+### Step 2: input validation
 
-`game_init()` first zero-initializes every field in `t_game`.
+`game_init()` first zero-initializes the full struct, then checks:
+- there is exactly one map argument
+- the file name ends with `.ber`
 
-This matters because cleanup is allowed to run even after partial startup. A
-field that starts as `NULL` or `0` is safe to check later.
+If that fails, the program exits before touching MLX.
 
-### Step 3: argument validation
-
-The program currently accepts only:
-- exactly one argument after the program name
-- a filename ending with `.ber`
-
-If the input is wrong, the program exits before touching MLX.
-
-### Step 4: map loading
+### Step 3: map loading
 
 `map_load()` opens the file and reads it line by line with `get_next_line()`.
 
-This approach is used because the map is naturally line-based and blank lines
-must be preserved. A blank line inside the file must be seen and rejected later,
-not silently skipped.
+This is important because blank lines must be preserved. If the project used a
+split function that skipped empty lines, an invalid map could look valid after
+parsing.
 
-### Step 5: map validation
+### Step 4: map validation
 
 `map_validate()` checks:
-- the map is not empty
+- the file is not empty
 - the first row is not empty
-- the map is rectangular
-- only valid symbols are used
-- the border is fully closed by walls
+- every row has the same width
+- only valid tile characters are used
+- the outer border is fully closed by walls
 - there is exactly one player
 - there is exactly one exit
 - there is at least one collectible
 
-Then `map_validate_path()` checks reachability.
+At this point the map is structurally correct, but it still might be impossible
+to finish.
 
-### Step 6: reachability check
+### Step 5: path validation
 
-Format validation alone does not guarantee that a map is playable.
+That is why the project also runs `map_validate_path()`.
 
-A map can look correct and still be impossible to finish:
-- a collectible may be trapped
-- the exit may be blocked off
-- the player may be isolated from the rest of the map
+The path check answers a different question:
 
-That is why the project uses `flood_fill`.
+**Can the player actually reach every collectible and the exit?**
 
-`flood_fill` starts from the player position and walks through every reachable
-non-wall tile. After that traversal, if a `C` or `E` is still untouched, the
-map is invalid.
+This is where `flood_fill()` is needed.
 
-This is the reason `flood_fill` exists:
+`flood_fill()` starts at the player position and marks every reachable non-wall
+tile. After that traversal, the code scans the copied map. If any `C` or `E`
+is still untouched, the map is rejected.
 
-**it verifies playability, not just file format.**
+Without `flood_fill()`, the project would accept maps that are formally correct
+but unwinnable.
 
-### Step 7: window size
+### Step 6: graphics setup
 
-Once the map is valid:
+After validation succeeds, `game_init()` computes:
 - `window_width = map_width * TILE_SIZE`
 - `window_height = map_height * TILE_SIZE`
 
-The current `TILE_SIZE` is `32`, so every tile image is expected to be `32x32`.
-
-### Step 8: graphics setup
-
-After the map is known to be valid, the program:
-- calls `mlx_init()`
+Then it:
+- initializes MLX
 - creates the window
-- loads all XPM assets
-- draws the map once
-- installs the hooks
+- loads all tile images
+- draws the current map
+- installs event hooks
 
-The assets live in the root `assets/` directory and are loaded at runtime.
+### Step 7: event handling
 
-### Step 9: redraw behavior
+The game currently reacts to three kinds of events:
 
-The program uses an expose hook so the map is redrawn if the window needs to be
-painted again.
+- `Esc`
+  Close the game immediately.
 
-That means the render path is not only "draw once and hope." The current code
-already has a proper redraw entry point.
+- window close button
+  Close the game through the same cleanup path.
 
-### Step 10: cleanup
+- expose event
+  Redraw the map when the window needs repainting.
 
-Every exit goes through `game_exit()`, which calls `game_destroy()`.
+- `W`, `A`, `S`, `D`
+  Try to move the player.
 
-`game_destroy()` frees:
-- all loaded images
-- the map
+### Step 8: movement rules
+
+`move_player()` enforces the gameplay rules:
+
+- moving outside the map does nothing
+- moving into a wall does nothing
+- moving onto floor succeeds
+- moving onto a collectible succeeds and increments `collected`
+- moving onto the exit is blocked until `collected == collectibles`
+- moving onto the exit after all collectibles are gathered ends the game
+
+On every successful non-exit move, the function:
+- changes the old player tile to `0`
+- changes the new tile to `P`
+- updates `player_x` and `player_y`
+- increments `moves`
+- prints the move count
+- redraws the map
+
+The move counter is printed only for successful moves, which matches the game
+logic: failed attempts do not count as movement.
+
+### Step 9: cleanup
+
+Every exit path goes through `game_exit()`, which calls `game_destroy()`.
+
+That cleanup path frees:
+- loaded images
+- map memory
 - the MLX window
 - the MLX display connection
 
-This gives the project one shared cleanup path for:
-- invalid input
-- invalid maps
-- missing assets
-- MLX startup failures
-- `Esc`
-- window close
+Having one shared cleanup path prevents partial-startup leaks and keeps the
+error paths simple.
 
-## 4. Why The Map Is Copied For Path Validation
+## 4. Why The Map Is Copied For Flood Fill
 
-`flood_fill` marks visited cells.
+`flood_fill()` marks visited tiles.
 
-If it modified the real map:
-- the original tile data would be lost
-- future rendering and gameplay would no longer know what each tile originally
-  was
+If it ran directly on `game->map`, the real game state would be damaged:
+- walls and floors would no longer be distinguishable in the same way
+- rendering would no longer reflect the original tile layout
+- movement would operate on modified data
 
-So the code first makes a deep copy with `duplicate_map()` and runs
-`flood_fill()` on that copy only.
+That is why `duplicate_map()` exists.
 
-That is why both functions are needed:
-- `duplicate_map()` preserves the real game state
+The pair has a clear division of responsibility:
+- `duplicate_map()` protects the real game state
 - `flood_fill()` answers the reachability question
 
 ## 5. Function-By-Function Explanation
 
-This section explains every current function and why it exists.
-
 ### `src/so_long/so_long.c`
 
-#### `int main(int ac, char **av)`
-
-Purpose:
-- create the main game state
-- initialize the program
-- enter the MLX loop
-- run final cleanup after the loop ends
-
-Why it exists:
-- it is the program entry point
-- it stays intentionally small so the rest of the logic remains modular
+`int main(int ac, char **av)`
+- Entry point of the program.
+- Creates the main `t_game` object.
+- Starts initialization, enters the MLX loop, and performs final cleanup when
+  the loop returns.
 
 ### `src/so_long/startup.c`
 
-#### `static int has_ber_extension(char *path)`
+`static int has_ber_extension(char *path)`
+- Checks whether the provided path ends with `.ber`.
+- Exists to reject invalid input before opening the file.
 
-Purpose:
-- check whether the provided map path ends with `.ber`
+`static void install_hooks(t_game *game)`
+- Registers the keyboard hook, window-destroy hook, and expose hook.
+- Exists so all event wiring is kept in one small place.
 
-Why it exists:
-- map filenames are part of the input contract
-- failing early here produces a clear user error
+`void game_destroy(t_game *game)`
+- Frees assets, map memory, window resources, and MLX display state.
+- Exists to centralize cleanup logic.
 
-#### `static void install_hooks(t_game *game)`
+`void game_exit(t_game *game, int exit_code, char *message)`
+- Optional error printing plus cleanup plus `exit()`.
+- Exists so success and error exits use the same shutdown path.
 
-Purpose:
-- register all current MLX callbacks
+`void game_init(t_game *game, int ac, char **av)`
+- Zero-initializes the full state, validates input, loads and validates the map,
+  creates the window, loads assets, draws the map, and installs hooks.
+- Exists as the single bootstrap function for the whole project.
 
-Current hooks:
-- key press
-- window destroy
-- expose / redraw
+`int handle_destroy(t_game *game)`
+- Called when the user closes the window.
+- Exists to adapt the MLX event callback to the shared exit path.
 
-Why it exists:
-- hook setup is easier to maintain when it lives in one place
-
-#### `void game_destroy(t_game *game)`
-
-Purpose:
-- free every resource owned by `t_game`
-
-Why it exists:
-- cleanup should be centralized
-- partial startup failures should still be able to clean safely
-
-#### `void game_exit(t_game *game, int exit_code, char *message)`
-
-Purpose:
-- print an optional error
-- destroy resources
-- terminate the process
-
-Why it exists:
-- all exits should behave consistently
-
-#### `void game_init(t_game *game, int ac, char **av)`
-
-Purpose:
-- run the complete startup sequence
-
-Why it exists:
-- startup order matters
-- this function enforces that order from validation through first render
-
-#### `int handle_destroy(t_game *game)`
-
-Purpose:
-- handle the window close event
-
-Why it exists:
-- the user must be able to close the window cleanly
-
-#### `int handle_keypress(int keysym, t_game *game)`
-
-Purpose:
-- react to key input
-
-Current behavior:
-- exits on `Esc`
-
-Why it exists:
-- it is the minimal interactive hook required at this stage
+`int handle_keypress(int keysym, t_game *game)`
+- Handles `Esc` and movement keys.
+- Exists to translate raw keyboard events into game actions.
 
 ### `src/so_long/helpers.c`
 
-#### `void logerr(char *s)`
-
-Purpose:
-- write an error message to standard error
-
-Why it exists:
-- it keeps error output consistent across the project
+`void logerr(char *s)`
+- Writes an error string to standard error followed by a newline.
+- Exists as the project's tiny shared error-output helper.
 
 ### `src/so_long/map_load.c`
 
-#### `static int append_map_row(t_game *game, char *row)`
+`static int append_map_row(t_game *game, char *row)`
+- Grows the `game->map` array by one row and appends the new string.
+- Exists because the file is read incrementally and the row count is not known
+  in advance.
 
-Purpose:
-- append one newly read row to the dynamic map array
+`static int store_map_line(t_game *game, char *line)`
+- Removes the trailing newline from a line returned by `get_next_line()` and
+  stores the row.
+- Exists to normalize file input into plain map strings.
 
-Why it exists:
-- the loader does not know the final map height in advance
+`void map_free(char **map)`
+- Frees a null-terminated array of strings.
+- Exists because both the real map and the flood-fill copy use the same layout.
 
-#### `static int store_map_line(t_game *game, char *line)`
-
-Purpose:
-- normalize one line returned by `get_next_line()`
-
-What it does:
-- removes a trailing newline when present
-- appends the cleaned row into `game->map`
-
-Why it exists:
-- the in-memory map should store pure tile rows, not newline characters
-
-#### `void map_free(char **map)`
-
-Purpose:
-- free any `char **` map
-
-Why it exists:
-- both the real map and temporary copies need the same cleanup logic
-
-#### `void map_load(t_game *game, char *path)`
-
-Purpose:
-- load the map file into memory
-
-Why it exists:
-- loading and validation are different concerns
-- keeping them separate makes the code clearer
+`void map_load(t_game *game, char *path)`
+- Opens the `.ber` file and fills `game->map` row by row.
+- Exists to isolate all file-reading logic from validation and gameplay.
 
 ### `src/so_long/map_validate.c`
 
-#### `static int is_valid_tile(char tile)`
+`static int is_valid_tile(char tile)`
+- Checks whether a character belongs to the allowed tile set.
+- Exists to make character validation explicit and readable.
 
-Purpose:
-- decide whether a character belongs to the allowed tile set
+`static void register_tile(t_game *game, int *players, int x, int y)`
+- Updates counters and stores the player position while the map is scanned.
+- Exists so one pass over the map can both validate and collect gameplay data.
 
-Why it exists:
-- it isolates the tile alphabet rule in one helper
+`static void validate_rows(t_game *game, int *players)`
+- Checks rectangular shape, valid characters, and closed borders for every row.
+- Exists to group all per-cell structural rules in one place.
 
-#### `static void register_tile(t_game *game, int *players, int x, int y)`
+`static void validate_counts(t_game *game, int players)`
+- Verifies the required counts for player, exit, and collectibles.
+- Exists because tile counts are a different validation concern from row shape.
 
-Purpose:
-- update counters while the validation pass scans the map
-
-Why it exists:
-- validation also needs to extract useful runtime state such as player
-  coordinates and collectible count
-
-#### `static void validate_rows(t_game *game, int *players)`
-
-Purpose:
-- perform the main structural scan of the map
-
-What it checks:
-- rectangular shape
-- legal characters
-- closed borders
-
-Why it exists:
-- these are the core file-structure rules of `so_long`
-
-#### `static void validate_counts(t_game *game, int players)`
-
-Purpose:
-- validate required entity counts after scanning
-
-Why it exists:
-- count validation is clearer as a separate stage from row scanning
-
-#### `void map_validate(t_game *game)`
-
-Purpose:
-- run the full validation pipeline
-
-Why it exists:
-- callers should only need one public validation entry point
+`void map_validate(t_game *game)`
+- Orchestrates structural validation, resets gameplay counters, and launches the
+  reachability check.
+- Exists as the public validation entry point after loading.
 
 ### `src/so_long/map_path.c`
 
-#### `static char **duplicate_map(char **map, int height)`
+`static char **duplicate_map(char **map, int height)`
+- Builds a deep copy of the map.
+- Exists so path validation can modify the copy without damaging the real map.
 
-Purpose:
-- create a deep copy of the map
+`static void flood_fill(char **map, int x, int y, t_game *game)`
+- Recursively marks every reachable non-wall tile.
+- Exists to prove the map is playable, not only well-formed.
 
-Why it exists:
-- the reachability algorithm must not damage the real map
+`static void check_reachable_tiles(t_game *game, char **copy)`
+- Scans the flood-filled copy for unreachable `C` or `E` tiles.
+- Exists to turn the traversal result into a simple final validation decision.
 
-#### `static void flood_fill(char **map, int x, int y, t_game *game)`
-
-Purpose:
-- walk through every reachable tile starting from the player
-
-How it works:
-- stop outside the map
-- stop on walls
-- stop on already visited cells
-- mark the current cell
-- recurse in four directions
-
-Why it exists:
-- it is the actual playability check
-- without it, the program would only know that the map is well-formed, not
-  solvable
-
-#### `static void check_reachable_tiles(t_game *game, char **copy)`
-
-Purpose:
-- inspect the flood-filled copy for unreachable `C` or `E`
-
-Why it exists:
-- `flood_fill()` marks reachability, and this function converts that result into
-  a final pass/fail decision
-
-#### `void map_validate_path(t_game *game)`
-
-Purpose:
-- run the complete reachability validation stage
-
-Why it exists:
-- it gives the rest of the project one clean public entry point for path
-  validation
+`void map_validate_path(t_game *game)`
+- Creates the map copy, runs flood fill, checks the result, and frees the copy.
+- Exists as the public reachability-validation function.
 
 ### `src/so_long/render.c`
 
-#### `static void destroy_image(void *mlx, void **img)`
+`static void destroy_image(void *mlx, void **img)`
+- Safely destroys one MLX image and nulls its pointer.
+- Exists to keep image cleanup repetitive but safe.
 
-Purpose:
-- safely destroy one MLX image pointer and clear it
+`static void load_asset(void **img, t_game *game, char *path, char *name)`
+- Loads one XPM file and verifies that its size matches `TILE_SIZE`.
+- Exists so all asset loading follows the same validation rules.
 
-Why it exists:
-- image cleanup is repeated for every loaded asset
+`static void *tile_image(t_game *game, char tile)`
+- Chooses the correct sprite for a given map tile.
+- Exists to convert map characters into image pointers.
 
-#### `static void load_asset(void **img, t_game *game, char *path, char *name)`
+`static void draw_tile(t_game *game, int x, int y)`
+- Draws one tile at the correct pixel position.
+- Exists to keep the map-drawing loop small and readable.
 
-Purpose:
-- load one XPM file into one MLX image pointer
+`void load_assets(t_game *game)`
+- Loads all five required game sprites.
+- Exists as the public asset-loading step during startup.
 
-What it also checks:
-- the file exists and loads correctly
-- the loaded image size matches `TILE_SIZE`
+`void destroy_assets(t_game *game)`
+- Destroys all loaded sprites.
+- Exists as the matching cleanup step for `load_assets()`.
 
-Why it exists:
-- every asset must satisfy the same runtime rule
-- a helper avoids repeating the same error handling five times
+`void draw_map(t_game *game)`
+- Clears the window and redraws every map tile.
+- Exists as the main render entry point used during startup, expose events, and
+  successful movement.
 
-#### `static void *tile_image(t_game *game, char tile)`
+`int handle_expose(t_game *game)`
+- Redraws the map when MLX reports that the window must be repainted.
+- Exists to keep the window contents stable after expose events.
 
-Purpose:
-- translate a map character into the image that should be drawn for that tile
+### `src/so_long/move.c`
 
-Why it exists:
-- rendering should depend on tile meaning, not scattered `if` blocks in the map
-  loop
+`static void print_number(int number)`
+- Writes a positive integer to standard output without using `printf`.
+- Exists to support move-count printing with minimal dependencies.
 
-#### `static void draw_tile(t_game *game, int x, int y)`
+`static void print_moves(int moves)`
+- Prints the move count followed by a newline.
+- Exists so move output formatting lives in one place.
 
-Purpose:
-- draw one tile at one map coordinate
+`static void apply_move(t_game *game, int next_x, int next_y, char next_tile)`
+- Performs the state update for a successful move onto floor or collectible.
+- Exists to keep `move_player()` focused on rules and branching.
 
-Why it exists:
-- the full map loop becomes simpler when the per-tile draw operation is isolated
-
-#### `void load_assets(t_game *game)`
-
-Purpose:
-- load every tile image used by the current renderer
-
-Why it exists:
-- the project now has a fixed mandatory asset set and needs one place to load
-  all of it
-
-#### `void destroy_assets(t_game *game)`
-
-Purpose:
-- destroy every loaded tile image
-
-Why it exists:
-- all image cleanup should stay together
-
-#### `void draw_map(t_game *game)`
-
-Purpose:
-- redraw the entire map to the window
-
-What it does:
-- clears the window
-- loops over every row and column
-- draws the image that corresponds to each map tile
-
-Why it exists:
-- the current renderer is intentionally simple and reliable
-- full redraws are easy to understand and are enough for this stage
-
-#### `int handle_expose(t_game *game)`
-
-Purpose:
-- redraw the map when the window needs repainting
-
-Why it exists:
-- a drawn window should remain visually correct after expose events
+`void move_player(t_game *game, int dx, int dy)`
+- Applies the movement rules, handles collectibles, blocks premature exit usage,
+  prints moves, redraws the map, and ends the game on a valid exit move.
+- Exists as the single gameplay action for keyboard movement.
 
 ### `src/gnl/get_next_line.c`
 
-The loader uses `get_next_line()` because the map file is line-based.
+`static char *ft_zerostring(size_t size)`
+- Allocates a zero-filled string buffer.
+- Exists as a small local helper for dynamic string storage inside GNL.
 
-That is useful because:
-- each line becomes one row
-- blank lines are preserved
-- validation sees the real file structure
+`static char *ft_realloc_str(char **src, size_t size)`
+- Grows the persistent storage string before appending fresh read data.
+- Exists because `get_next_line()` builds the current line incrementally.
 
-#### `static char *ft_zerostring(size_t size)`
+`static char *get_line(char **str)`
+- Extracts the next complete line from storage and keeps any remainder for the
+  next call.
+- Exists to separate "read more bytes" from "return one line."
 
-Purpose:
-- allocate a zeroed string buffer
+`char *get_next_line(int fd)`
+- Reads from the file descriptor until one line is available or EOF is reached.
+- Exists because map loading is line-oriented and blank rows must be preserved.
 
-Why it exists:
-- the line reader needs clean temporary buffers and expanded storage
+## 6. What Is Still Outside The Current Scope
 
-#### `static char *ft_realloc_str(char **src, size_t size)`
+The current gameplay loop is in place, but a few project-level tasks remain:
+- add an automated map test script
+- run `norminette`
+- run Valgrind checks
+- decide whether to continue into bonus features
 
-Purpose:
-- grow the persistent storage buffer before appending new data
-
-Why it exists:
-- file reads arrive in chunks and the buffered data size is not fixed
-
-#### `static char *get_line(char **str)`
-
-Purpose:
-- cut the next full logical line out of the persistent storage buffer
-
-Why it exists:
-- `get_next_line()` needs a helper that separates "read bytes" from
-  "return one line"
-
-#### `char *get_next_line(int fd)`
-
-Purpose:
-- return the next line from a file descriptor
-
-Why it exists:
-- it matches the loader's needs exactly
-
-Important safety detail:
-- the loop must handle `storage == NULL`
-- that guard prevents the null-pointer crash that happens if `ft_strchr()` is
-  called before any storage exists
-
-## 6. Why Static Full-Map Redraw Is Enough Right Now
-
-The current renderer redraws the whole map.
-
-That is the right choice for this stage because:
-- the map is still small
-- there is no movement yet
-- correctness is more important than optimization
-- the code stays simple and easy to debug
-
-Later, movement can still keep this approach or optimize it if needed.
-
-## 7. Assets
-
-The project now has a minimal asset set:
-- `assets/floor.xpm`
-- `assets/wall.xpm`
-- `assets/player.xpm`
-- `assets/collectible.xpm`
-- `assets/exit.xpm`
-
-These assets are intentionally simple.
-
-Their job right now is not to look final. Their job is to prove that:
-- asset loading works
-- tile-to-image mapping works
-- map dimensions match rendered dimensions
-- cleanup works for loaded images
-
-## 8. Build Logic
-
-The root `Makefile` builds:
-- `libft`
-- `minilibx`
-- `so_long`
-- `get_next_line`
-
-The inner `src/so_long/Makefile` builds:
-- `so_long.c`
-- `helpers.c`
-- `startup.c`
-- `map_load.c`
-- `map_validate.c`
-- `map_path.c`
-- `render.c`
-- `../gnl/get_next_line.c`
-
-Current links:
-- `-lmlx`
-- `-lft`
-- `-lXext`
-- `-lX11`
-- `-lm`
-- `-lz`
-
-## 9. Test Maps
-
-The `maps/` directory contains:
-- one valid map
-- several invalid maps
-
-The current tests support verification of:
-- valid startup
-- bad characters
-- bad borders
-- bad counts
-- non-rectangular maps
-- unreachable collectible
-- unreachable exit
-- blank lines
-
-## 10. Current State
-
-What is already implemented:
-- input validation
-- map loading
-- structural map validation
-- reachability validation
-- map-based window sizing
-- asset loading
-- static map rendering
-- redraw on expose
-- cleanup for maps, images, window, and MLX state
-
-What comes next:
-- W/A/S/D movement
-- collision against walls
-- collectible pickup
-- move counting
-- exit behavior after collecting everything
+Bonus work would likely mean:
+- enemy patrols
+- sprite animation
+- on-screen move counter
+- additional polish beyond the mandatory part

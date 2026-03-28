@@ -16,6 +16,7 @@ LDLIBS = -lmlx -lft -lXext -lX11 -lm -lz
 SOURCES =	so_long.c \
 			helpers.c \
 			startup.c \
+			move.c \
 			map_load.c \
 			map_validate.c \
 			map_path.c \
