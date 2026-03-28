@@ -19,13 +19,13 @@
 # include <X11/X.h>
 # include <X11/keysym.h>
 
-# define TILE_SIZE 32
+# define TILE_SIZE 64
 # define WINDOW_TITLE "so_long"
-# define FLOOR_PATH "assets/floor.xpm"
-# define WALL_PATH "assets/wall.xpm"
-# define PLAYER_PATH "assets/player.xpm"
-# define COLLECTIBLE_PATH "assets/collectible.xpm"
-# define EXIT_PATH "assets/exit.xpm"
+# define FLOOR_TEXTURE_PATH "textures/floor.xpm"
+# define WALL_TEXTURE_PATH "textures/wall.xpm"
+# define PLAYER_TEXTURE_PATH "textures/player.xpm"
+# define COLLECTIBLE_TEXTURE_PATH "textures/collectible.xpm"
+# define EXIT_TEXTURE_PATH "textures/exit.xpm"
 
 typedef struct s_game
 {
@@ -53,8 +53,8 @@ void	game_init(t_game *game, int ac, char **av);
 void	game_destroy(t_game *game);
 void	game_exit(t_game *game, int exit_code, char *message);
 void	install_hooks(t_game *game);
-void	load_assets(t_game *game);
-void	destroy_assets(t_game *game);
+void	load_textures(t_game *game);
+void	destroy_textures(t_game *game);
 int		draw_map(t_game *game);
 void	logerr(char *s);
 void	move_player(t_game *game, int dx, int dy);

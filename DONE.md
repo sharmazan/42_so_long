@@ -6,7 +6,7 @@ The current project already covers the core mandatory gameplay loop:
 - load a `.ber` map
 - validate that the map is well-formed and playable
 - create the MLX window with the correct size
-- load XPM assets
+- load XPM textures
 - draw the map
 - move the player with `W`, `A`, `S`, `D`
 - collect every `C`
@@ -43,7 +43,7 @@ The startup order is:
 5. compute the window size
 6. initialize MLX
 7. create the window
-8. load assets
+8. load textures
 9. draw the map
 10. install hooks and enter the loop
 
@@ -202,7 +202,7 @@ logic: failed attempts do not count as movement.
 Every exit path goes through `game_exit()`, which calls `game_destroy()`.
 
 That cleanup path frees:
-- loaded images
+- loaded textures
 - map memory
 - the MLX window
 - the MLX display connection
@@ -246,7 +246,7 @@ The pair has a clear division of responsibility:
 - Exists so all event wiring is kept in one small place.
 
 `void game_destroy(t_game *game)`
-- Frees assets, map memory, window resources, and MLX display state.
+- Frees textures, map memory, window resources, and MLX display state.
 - Exists to centralize cleanup logic.
 
 `void game_exit(t_game *game, int exit_code, char *message)`
@@ -255,7 +255,7 @@ The pair has a clear division of responsibility:
 
 `void game_init(t_game *game, int ac, char **av)`
 - Zero-initializes the full state, validates input, loads and validates the map,
-  creates the window, loads assets, draws the map, and installs hooks.
+  creates the window, loads textures, draws the map, and installs hooks.
 - Exists as the single bootstrap function for the whole project.
 
 `int handle_destroy(t_game *game)`
@@ -351,13 +351,13 @@ The pair has a clear division of responsibility:
 - Draws one tile at the correct pixel position.
 - Exists to keep the map-drawing loop small and readable.
 
-`void load_assets(t_game *game)`
-- Loads all five required game sprites.
-- Exists as the public asset-loading step during startup.
+`void load_textures(t_game *game)`
+- Loads all five required game textures.
+- Exists as the public texture-loading step during startup.
 
-`void destroy_assets(t_game *game)`
-- Destroys all loaded sprites.
-- Exists as the matching cleanup step for `load_assets()`.
+`void destroy_textures(t_game *game)`
+- Destroys all loaded textures.
+- Exists as the matching cleanup step for `load_textures()`.
 
 `int draw_map(t_game *game)`
 - Clears the window and redraws every map tile.

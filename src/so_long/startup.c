@@ -38,7 +38,7 @@ static void	init_graphics(t_game *game)
 			game->window_height, WINDOW_TITLE);
 	if (!game->win)
 		game_exit(game, 1, "Error\nmlx_new_window failed");
-	load_assets(game);
+	load_textures(game);
 	draw_map(game);
 	install_hooks(game);
 }

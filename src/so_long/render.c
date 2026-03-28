@@ -21,7 +21,7 @@ static void	destroy_image(void *mlx, void **img)
 	}
 }
 
-static void	load_asset(void **img, t_game *game, char *path, char *name)
+static void	load_texture(void **img, t_game *game, char *path, char *name)
 {
 	int	width;
 	int	height;
@@ -32,25 +32,25 @@ static void	load_asset(void **img, t_game *game, char *path, char *name)
 	if (width != TILE_SIZE || height != TILE_SIZE)
 	{
 		destroy_image(game->mlx, img);
-		game_exit(game, 1, "Error\nAsset size does not match TILE_SIZE");
+		game_exit(game, 1, "Error\nTexture size does not match TILE_SIZE");
 	}
 }
 
-void	load_assets(t_game *game)
+void	load_textures(t_game *game)
 {
-	load_asset(&game->floor_img, game, FLOOR_PATH,
-		"Error\nCould not load assets/floor.xpm");
-	load_asset(&game->wall_img, game, WALL_PATH,
-		"Error\nCould not load assets/wall.xpm");
-	load_asset(&game->player_img, game, PLAYER_PATH,
-		"Error\nCould not load assets/player.xpm");
-	load_asset(&game->collectible_img, game, COLLECTIBLE_PATH,
-		"Error\nCould not load assets/collectible.xpm");
-	load_asset(&game->exit_img, game, EXIT_PATH,
-		"Error\nCould not load assets/exit.xpm");
+	load_texture(&game->floor_img, game, FLOOR_TEXTURE_PATH,
+		"Error\nCould not load textures/floor.xpm");
+	load_texture(&game->wall_img, game, WALL_TEXTURE_PATH,
+		"Error\nCould not load textures/wall.xpm");
+	load_texture(&game->player_img, game, PLAYER_TEXTURE_PATH,
+		"Error\nCould not load textures/player.xpm");
+	load_texture(&game->collectible_img, game, COLLECTIBLE_TEXTURE_PATH,
+		"Error\nCould not load textures/collectible.xpm");
+	load_texture(&game->exit_img, game, EXIT_TEXTURE_PATH,
+		"Error\nCould not load textures/exit.xpm");
 }
 
-void	destroy_assets(t_game *game)
+void	destroy_textures(t_game *game)
 {
 	destroy_image(game->mlx, &game->floor_img);
 	destroy_image(game->mlx, &game->wall_img);

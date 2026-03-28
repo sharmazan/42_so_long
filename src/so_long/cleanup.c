@@ -14,7 +14,7 @@
 
 void	game_destroy(t_game *game)
 {
-	destroy_assets(game);
+	destroy_textures(game);
 	if (game->map)
 	{
 		map_free(game->map);
