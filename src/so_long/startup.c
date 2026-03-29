@@ -6,7 +6,7 @@
 /*   By: ssharmaz <ssharmaz@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 10:42:00 by ssharmaz          #+#    #+#             */
-/*   Updated: 2026/03/29 14:12:54 by ssharmaz         ###   ########.fr       */
+/*   Updated: 2026/03/29 18:19:34 by ssharmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,11 +20,6 @@ static int	has_ber_extension(char *path)
 	if (len < 5)
 		return (0);
 	return (!ft_strncmp(path + len - 4, ".ber", 5));
-}
-
-static void	init_game_state(t_game *game)
-{
-	ft_bzero(game, sizeof(*game));
 }
 
 static void	init_graphics(t_game *game)
@@ -45,7 +40,7 @@ static void	init_graphics(t_game *game)
 
 void	game_init(t_game *game, int ac, char **av)
 {
-	init_game_state(game);
+	ft_bzero(game, sizeof(*game));
 	if (ac != 2 || !has_ber_extension(av[1]))
 		game_exit(game, 1, "Error\nusage: ./so_long <map-file.ber>");
 	map_load(game, av[1]);

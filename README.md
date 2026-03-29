@@ -12,6 +12,13 @@ Move the player with `W`, `A`, `S`, `D`.
 
 Current implementation should be executed on linux, where MLX lib and X11 libraries installed.
 
+The build links against the system-installed MLX instead of a vendored copy.
+If your MLX headers or library are in a non-standard location, override the flags when building:
+
+```bash
+make MLX_CPPFLAGS='-I/path/to/mlx/include' MLX_LDFLAGS='-L/path/to/mlx/lib'
+```
+
 ## How to run the game:
 Make first:
 ```

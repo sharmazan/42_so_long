@@ -2,6 +2,9 @@ NAME = so_long
 SRC_PATH = src
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
+MLX_CPPFLAGS ?=
+MLX_LDFLAGS ?=
+MLX_LDLIBS ?= -lmlx -lXext -lX11 -lm -lz
 
 SO_LONG_PATH = $(SRC_PATH)/$(NAME)
 SO_LONG_SOURCES = $(wildcard $(SO_LONG_PATH)/*.c)
@@ -11,19 +14,16 @@ GNL_SOURCES = $(wildcard $(GNL_PATH)/*.c)
 GNL_HEADERS = $(wildcard $(GNL_PATH)/*.h)
 LIBFT_PATH = $(SRC_PATH)/libft
 LIBFT_LIB = $(LIBFT_PATH)/libft.a
-MLX_PATH = $(SRC_PATH)/minilibx-linux
-MLX_LIB = $(MLX_PATH)/libmlx.a
 NORM_PATHS = $(SO_LONG_PATH) $(GNL_PATH) $(LIBFT_PATH)
 
 all: $(NAME)
 
-$(NAME): $(MLX_LIB) $(LIBFT_LIB) $(SO_LONG_SOURCES) \
+$(NAME): $(LIBFT_LIB) $(SO_LONG_SOURCES) \
 	$(SO_LONG_HEADERS) $(GNL_SOURCES) $(GNL_HEADERS) $(SO_LONG_PATH)/Makefile
-	$(MAKE) -C $(SO_LONG_PATH) CC="$(CC)" CFLAGS="$(CFLAGS)"
+	$(MAKE) -C $(SO_LONG_PATH) CC="$(CC)" CFLAGS="$(CFLAGS)" \
+		MLX_CPPFLAGS="$(MLX_CPPFLAGS)" MLX_LDFLAGS="$(MLX_LDFLAGS)" \
+		MLX_LDLIBS="$(MLX_LDLIBS)"
 	cp $(SO_LONG_PATH)/$(NAME) .
-
-$(MLX_LIB):
-	$(MAKE) -C $(MLX_PATH)
 
 $(LIBFT_LIB):
 	$(MAKE) -C $(LIBFT_PATH) CC="$(CC)" CFLAGS="$(CFLAGS)"
@@ -40,7 +40,6 @@ fclean: clean
 	$(MAKE) -C $(SO_LONG_PATH) fclean
 
 clean:
-	if [ -f $(MLX_PATH)/Makefile.gen ]; then $(MAKE) -C $(MLX_PATH) clean; fi
 	$(MAKE) -C $(LIBFT_PATH) clean
 	$(MAKE) -C $(SO_LONG_PATH) clean
 

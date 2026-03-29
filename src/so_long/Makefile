@@ -5,12 +5,13 @@ CFLAGS = -Wall -Wextra -Werror
 LIBFT_PATH = ../libft
 LIBFT_LIB = $(LIBFT_PATH)/libft.a
 GNL_PATH = ../gnl
-MLX_PATH = ../minilibx-linux
-MLX_LIB = $(MLX_PATH)/libmlx.a
+MLX_CPPFLAGS ?=
+MLX_LDFLAGS ?=
+MLX_LDLIBS ?= -lmlx -lXext -lX11 -lm -lz
 HEADERS = so_long.h $(GNL_PATH)/get_next_line.h
-CPPFLAGS = -I../minilibx-linux
-LDFLAGS = -L$(MLX_PATH) -L$(LIBFT_PATH)
-LDLIBS = -lmlx -lft -lXext -lX11 -lm -lz
+CPPFLAGS = $(MLX_CPPFLAGS)
+LDFLAGS = $(MLX_LDFLAGS) -L$(LIBFT_PATH)
+LDLIBS = -lft $(MLX_LDLIBS)
 
 
 SOURCES =	so_long.c \
@@ -30,11 +31,9 @@ OBJECTS = $(SOURCES:.c=.o)
 
 all: $(NAME)
 
-$(NAME): $(MLX_LIB) $(LIBFT_LIB) $(OBJECTS)
-	$(CC) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(NAME)
 
-$(MLX_LIB):
-	$(MAKE) -C $(MLX_PATH)
+$(NAME): $(LIBFT_LIB) $(OBJECTS)
+	$(CC) $(OBJECTS) $(LDFLAGS) $(LDLIBS) -o $(NAME)
 
 $(LIBFT_LIB):
 	$(MAKE) -C $(LIBFT_PATH)
