@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by __ssharmaz__*.
+*This project has been created as part of the 42 curriculum by ssharmaz*.
 
 # Description
 
@@ -12,7 +12,6 @@ Move the player with `W`, `A`, `S`, `D`.
 
 Current implementation should be executed on linux, where MLX lib and X11 libraries installed.
 
-The build links against the system-installed MLX instead of a vendored copy.
 If your MLX headers or library are in a non-standard location, override the flags when building:
 
 ```bash
@@ -28,13 +27,14 @@ then run with
 ```
 ./so_long <map-file.ber>
 ```
+You could find some maps to play in the `maps/valid` folder.
 
 # Resources
 
 ## MiniLibX Documentation
 https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html#initialization
 
-# so_long Project Guide
+# so_long implementation
 
 How the project works:
 - it loads a `.ber` map
