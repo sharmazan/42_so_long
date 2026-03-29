@@ -31,9 +31,7 @@ then run with
 https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html#initialization
 
 
-# TODO
-
-## Done
+# Done
 - Proper window management with `Esc` and window-close handling
 - `t_game` state for map, window, player position, counters, and loaded
   textures
@@ -52,12 +50,12 @@ https://harm-smits.github.io/42docs/libs/minilibx/getting_started.html#initializ
 - Cleanup for map memory, images, window, and MLX display state
 - Valid and invalid `.ber` fixture maps
 
-## Next
+### Norminette
+
+### Test with Valgrind
+
+# TODO
 
 ### Add a test script
 Create a script to ensure `./so_long` returns `Error` on every invalid map and
 starts correctly on valid maps.
-
-### Norminette
-
-### Test with Valgrind
