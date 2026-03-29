@@ -6,7 +6,7 @@
 /*   By: ssharmaz <ssharmaz@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/29 00:20:00 by ssharmaz          #+#    #+#             */
-/*   Updated: 2026/03/29 14:14:07 by ssharmaz         ###   ########.fr       */
+/*   Updated: 2026/03/29 18:54:38 by ssharmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,6 @@ int	draw_map(t_game *game)
 	int	x;
 	int	y;
 
-	mlx_clear_window(game->mlx, game->window);
 	y = 0;
 	while (y < game->map_height)
 	{

@@ -6,7 +6,7 @@
 /*   By: ssharmaz <ssharmaz@student.42vienna.com    +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2026/03/12 10:42:00 by ssharmaz          #+#    #+#             */
-/*   Updated: 2026/03/12 10:42:00 by ssharmaz         ###   ########.fr       */
+/*   Updated: 2026/03/29 19:25:38 by ssharmaz         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@ void	load_textures(t_game *game);
 void	destroy_textures(t_game *game);
 int		draw_map(t_game *game);
 void	logerr(char *s);
+char	**duplicate_map(char **map, int height);
 void	move_player(t_game *game, int dx, int dy);
 void	map_load(t_game *game, char *path);
 void	map_validate(t_game *game);

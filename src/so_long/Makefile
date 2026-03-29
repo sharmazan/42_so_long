@@ -22,7 +22,7 @@ SOURCES =	so_long.c \
 			move.c \
 			map_load.c \
 			map_validate.c \
-			map_path.c \
+			map_path_verification.c \
 			render.c \
 			render_map.c \
 			$(GNL_PATH)/get_next_line.c
