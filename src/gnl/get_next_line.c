@@ -14,19 +14,6 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-// ALGO:
-// if fd < 0 -> return NULL
-// if not \n in storage: read in loop
-//   read from file BUFFER_SIZE bytes to buffer
-//   if error (bytes_read == -1 -> return NULL)
-//   increase storage, save buffer to storage
-//   if bytes_read < BUFFER_SIZE: break ;
-// if \n in storage: return substr with \n, store everything else to storage
-// else return storage
-
-// TODO
-// save fd and storage in a linked list to read from several files
-
 static char	*ft_zerostring(size_t size)
 {
 	char	*s;
