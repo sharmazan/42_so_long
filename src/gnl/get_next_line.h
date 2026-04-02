@@ -19,6 +19,13 @@
 
 # include "../libft/libft.h"
 
+typedef struct s_gnl
+{
+	char	*storage;
+	int		error;
+}	t_gnl;
+
 char	*get_next_line(int fd);
+int		get_next_line_cleanup(void);
 
 #endif

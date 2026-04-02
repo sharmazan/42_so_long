@@ -14,12 +14,13 @@
 
 void	game_destroy(t_game *game)
 {
-	destroy_textures(game);
+	get_next_line_cleanup();
 	if (game->map)
 	{
 		map_free(game->map);
 		game->map = NULL;
 	}
+	destroy_textures(game);
 	if (game->mlx && game->window)
 	{
 		mlx_destroy_window(game->mlx, game->window);

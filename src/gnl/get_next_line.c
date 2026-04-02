@@ -14,41 +14,31 @@
 #include <stdlib.h>
 #include <unistd.h>
 
-static char	*ft_zerostring(size_t size)
+static t_gnl	*get_state(void)
 {
-	char	*s;
+	static t_gnl	state;
 
-	s = malloc(size);
-	if (!s)
-		return (NULL);
-	while (size)
-		s[--size] = 0;
-	return (s);
+	return (&state);
 }
 
-static char	*ft_realloc_str(char **src, size_t size)
+static char	*ft_realloc_str(char **src, const char *data, size_t size)
 {
-	char	*temp;
 	char	*str;
 	size_t	srclen;
 
 	if (!*src)
-	{
-		*src = ft_zerostring(size + 1);
-		return (*src);
-	}
-	temp = ft_strdup(*src);
-	if (!temp)
-		return (NULL);
-	srclen = ft_strlen(temp);
-	str = ft_zerostring(srclen + size + 1);
+		srclen = 0;
+	else
+		srclen = ft_strlen(*src);
+	str = ft_calloc(srclen + size + 1, 1);
 	if (!str)
-		return (free(temp), NULL);
-	while (srclen--)
-		str[srclen] = temp[srclen];
+		return (NULL);
+	if (srclen)
+		ft_memcpy(str, *src, srclen);
+	ft_memcpy(str + srclen, data, size);
 	free(*src);
 	*src = str;
-	return (free(temp), str);
+	return (str);
 }
 
 static char	*get_line(char **str)
@@ -56,52 +46,57 @@ static char	*get_line(char **str)
 	char	*buf;
 	char	*temp;
 	size_t	i;
+	size_t	len;
 
-	i = 0;
 	if (!*str)
 		return (NULL);
-	while ((*str)[i])
-		if ((*str)[i++] == '\n')
-			break ;
-	if (i == ft_strlen(*str))
-	{
-		buf = ft_strdup(*str);
-		free(*str);
-		*str = NULL;
-		return (buf);
-	}
+	len = ft_strlen(*str);
+	i = 0;
+	while ((*str)[i] && (*str)[i] != '\n')
+		i++;
+	if ((*str)[i] == '\n')
+		i++;
+	if (i == len)
+		return (buf = *str, *str = NULL, buf);
 	buf = ft_substr(*str, 0, i);
-	temp = ft_substr(*str, i, ft_strlen(*str));
+	temp = ft_substr(*str, i, len - i);
 	if (!buf || !temp)
-		return (free(buf), free(temp), free(*str), *str = NULL, NULL);
-	free(*str);
-	*str = temp;
-	return (buf);
+		return (get_state()->error = 1, free(buf), free(temp),
+			free(*str), *str = NULL, NULL);
+	return (free(*str), *str = temp, buf);
+}
+
+int	get_next_line_cleanup(void)
+{
+	t_gnl	*st;
+	int		err;
+
+	st = get_state();
+	err = st->error;
+	free(st->storage);
+	st->storage = NULL;
+	st->error = 0;
+	return (err);
 }
 
 char	*get_next_line(int fd)
 {
-	static char	*storage = NULL;
-	char		*buffer;
-	ssize_t		bytes_read;
+	t_gnl	*st;
+	char	buf[BUFFER_SIZE + 1];
+	ssize_t	br;
 
-	buffer = ft_zerostring(BUFFER_SIZE + 1);
-	if (fd < 0 || !buffer)
-		return (free(buffer), NULL);
-	while (!storage || !ft_strchr(storage, '\n'))
+	st = get_state();
+	st->error = 0;
+	if (fd < 0)
+		return (NULL);
+	while (!st->storage || !ft_strchr(st->storage, '\n'))
 	{
-		bytes_read = read(fd, buffer, BUFFER_SIZE);
-		if (bytes_read == -1)
-			return (free(storage), storage = NULL, free(buffer), NULL);
-		if (bytes_read == 0)
+		br = read(fd, buf, BUFFER_SIZE);
+		if (br == -1 || (br && !ft_realloc_str(&st->storage, buf, br)))
+			return (st->error = (br != -1), free(st->storage),
+				st->storage = NULL, NULL);
+		if (br == 0)
 			break ;
-		if (!ft_realloc_str(&storage, bytes_read))
-			return (free(storage), storage = NULL, free(buffer), NULL);
-		ft_strlcat(storage, buffer, ft_strlen(storage) + bytes_read + 1);
-		if (bytes_read < BUFFER_SIZE)
-			break ;
-		while (bytes_read--)
-			buffer[bytes_read] = 0;
 	}
-	return (free(buffer), get_line(&storage));
+	return (get_line(&st->storage));
 }

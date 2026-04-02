@@ -75,4 +75,6 @@ void	map_load(t_game *game, char *path)
 		line = get_next_line(fd);
 	}
 	close(fd);
+	if (get_next_line_cleanup())
+		game_exit(game, 1, "Error\nMemory allocation failed");
 }
